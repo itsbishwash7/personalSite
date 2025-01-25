@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Under Maintenance</title>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #00aaff;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .terminal {
+            padding: 20px;
+            box-sizing: border-box;
+            animation: fadeIn 1.5s ease-in-out;
+            line-height: 1.8;
+            display: none;
+        }
+
+        .info {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #ffcc00;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 16px;
+            background-color: #00aaff;
+            animation: smoothBlink 1.2s step-end infinite;
+            vertical-align: bottom;
+        }
+
+        @keyframes smoothBlink {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .turnstile-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+    </style>
+    <script>
+        function typeEffect(element, text, speed) {
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            type();
+        }
+
+        function handleInvalidPath() {
+            const validPaths = ['/', '/index.html'];
+            const currentPath = window.location.pathname;
+            if (!validPaths.includes(currentPath)) {
+                window.location.replace("https://www.cloudflare.com");
+            }
+        }
+
+        function loadTurnstile(callback) {
+            const script = document.createElement('script');
+            script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad";
+            script.async = true;
+            document.body.appendChild(script);
+            
+            window.onTurnstileLoad = () => {
+                callback();
+            };
+        }
+
+        function fetchGeoLocation() {
+            return new Promise((resolve, reject) => {
+                fetch('https://ipinfo.io/json?token=76f9117fa27650')
+                    .then(response => response.json())
+                    .then(data => resolve(data))
+                    .catch(err => reject(err));
+            });
+        }
+
+        function onTurnstileSuccess() {
+            document.querySelector('.turnstile-container').style.display = 'none';
+            document.querySelector('.terminal').style.display = 'block';
+
+            const terminal = document.querySelector(".terminal");
+            const info = document.querySelector(".info");
+
+            const messages = [
+                "Hello there ....",
+                "Website currently under maintenance ....",
+                "Expected recovery timeline: Q2-2025 ....",
+                "For queries ....",
+                "Email: admin@sharmabishwash.com.np ....",
+                "Follow me on <a href='https://twitter.com/bishwashsharmaa' target='_blank'>Twitter</a> ....",
+                "Thanks for stopping by ...."
+            ];
+           
+            let delay = 0;
+            messages.forEach((message) => {
+                const p = document.createElement("p");
+                terminal.appendChild(p);
+                setTimeout(() => typeEffect(p, message, 40), delay);
+                delay += message.length * 40 + 400;
+            });
+
+            setTimeout(() => {
+                const cursor = document.createElement("span");
+                cursor.className = "cursor";
+                terminal.appendChild(cursor);
+            }, delay);
+
+            fetchGeoLocation().then(data => {
+                const { city, region, country, timezone } = data;
+                const currentTime = new Date().toLocaleString("en-US", { timeZone: timezone });
+                info.textContent = `${city}, ${region}, ${country}, Earth | ${currentTime}`;
+            }).catch(err => {
+                info.textContent = `Location info unavailable | ${new Date().toLocaleString()}`;
+            });
+        }
+
+        window.onload = () => {
+            handleInvalidPath();
+
+            loadTurnstile(() => {
+                const turnstileContainer = document.createElement('div');
+                turnstileContainer.className = 'turnstile-container';
+                document.body.appendChild(turnstileContainer);
+
+                const turnstileElement = document.createElement('div');
+                turnstileElement.className = 'cf-turnstile';
+                turnstileContainer.appendChild(turnstileElement);
+
+                turnstileContainer.innerHTML = `<div class="cf-turnstile" data-sitekey="0x4AAAAAAA6I2nWKVJjZw9NO" data-callback="onTurnstileSuccess"></div>`;
+            });
+        };
+    </script>
+</head>
+<body>
+    <div class="terminal">
+        <div class="content"></div>
+        <div class="info"></div>
+    </div>
+</body>
+</html>
